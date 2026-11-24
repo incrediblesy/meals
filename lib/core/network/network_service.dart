@@ -7,31 +7,22 @@ class NetworkService {
   final Dio _dio;
   final NetworkInfo networkInfo;
 
-  NetworkService(this.networkInfo)
-      : _dio = Dio(
-          BaseOptions(
-            baseUrl: baseUrl,
-          ),
-        );
+  NetworkService(this.networkInfo, {Dio? dio})
+      : _dio = dio ?? Dio(BaseOptions(
+          baseUrl: baseUrl,
+          connectTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 20),
+          sendTimeout: const Duration(seconds: 10),
+        ));
 
   Future<Response> getRequest(String url) async {
-    try {
-      final isConnected = await networkInfo.isConnected;
-      if (!isConnected) {
-        // Handle network not available case, you can throw an exception or return an error response.
-        throw DioException(
-          message: 'No internet connection',
-          requestOptions: RequestOptions(path: url),
-        );
-      }
-
-      final response = await _dio.get(url);
-      return response;
-    } catch (error) {
+    if (!await networkInfo.isConnected) {
       throw DioException(
-        message: 'Something went wrong',
+        type: DioExceptionType.connectionError,
+        message: 'No internet connection',
         requestOptions: RequestOptions(path: url),
       );
     }
+    return _dio.get(url);
   }
 }

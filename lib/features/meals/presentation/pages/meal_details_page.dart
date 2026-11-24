@@ -1,292 +1,100 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:meals/core/widgets/recipe_image.dart';
+import 'package:meals/features/meals/domain/entities/meal_entity.dart';
 import 'package:meals/features/meals/presentation/bloc/meals_bloc.dart';
-import 'package:url_launcher/url_launcher_string.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MealDetailsPage extends StatefulWidget {
-  final String id;
-
   const MealDetailsPage({super.key, required this.id});
-
+  final String id;
   @override
   State<MealDetailsPage> createState() => _MealDetailsPageState();
 }
 
 class _MealDetailsPageState extends State<MealDetailsPage> {
-  bool get isDesktop => MediaQuery.of(context).size.width >= 1000;
-
+  final Set<int> _checked = {};
   @override
   void initState() {
     super.initState();
-    context.read<MealsBloc>().add(GetMealById(widget.id));
+    _load();
   }
+  void _load() => context.read<MealsBloc>().add(GetMealById(widget.id));
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<MealsBloc, MealsState>(
-      builder: (context, state) {
-        if (state is MealLoaded) {
-          final meal = state.meal;
-
-          return Scaffold(
-            body: CustomScrollView(
-              slivers: [
-                _buildSliverHeader(meal),
-                SliverToBoxAdapter(
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 1100),
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: isDesktop
-                            ? _buildDesktopContent(meal)
-                            : _buildMobileContent(meal),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-
-        if (state is MealsError) {
-          return Scaffold(
-            appBar: AppBar(),
-            body: Center(child: Text(state.message)),
-          );
-        }
-
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
-      },
-    );
-  }
-
-  // ================= HEADER =================
-
-  SliverAppBar _buildSliverHeader(dynamic meal) {
-    return SliverAppBar(
-      expandedHeight: 360,
-      pinned: true,
-      flexibleSpace: FlexibleSpaceBar(
-        title: Text(meal.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-        background: Hero(
-          tag: meal.id,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Image.network(meal.thumbnail ?? '', fit: BoxFit.cover),
-              const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.black54],
-                  ),
-                ),
-              ),
+    return BlocBuilder<MealsBloc, MealsState>(builder: (context, state) {
+      if (state is MealsError) {
+        return Scaffold(appBar: AppBar(), body: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+        const Text('Could not load this recipe.'), const SizedBox(height: 12),
+        FilledButton(onPressed: _load, child: const Text('Try again')),
+      ])));
+      }
+      if (state is! MealLoaded) return Scaffold(appBar: AppBar(), body: const Center(child: CircularProgressIndicator()));
+      final meal = state.meal;
+      final theme = Theme.of(context);
+      return Scaffold(body: CustomScrollView(slivers: [
+        SliverAppBar(pinned: true, expandedHeight: 300, flexibleSpace: FlexibleSpaceBar(background: Hero(tag: meal.id, child: RecipeImage(url: meal.thumbnail)))),
+        SliverToBoxAdapter(child: Center(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 1000), child: Padding(
+          padding: const EdgeInsets.all(24), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(meal.name, style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            Wrap(spacing: 8, runSpacing: 8, children: [
+              if (meal.category?.trim().isNotEmpty ?? false) Chip(label: Text(meal.category!)),
+              if (meal.area?.trim().isNotEmpty ?? false) Chip(label: Text(meal.area!)),
+              Chip(label: Text('${meal.ingredients.length} ingredients')),
+            ]),
+            const SizedBox(height: 24),
+            LayoutBuilder(builder: (_, constraints) {
+              if (constraints.maxWidth >= 700) {
+                return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Expanded(child: _ingredients(meal)), const SizedBox(width: 32), Expanded(child: _instructions(meal)),
+              ]);
+              }
+              return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_ingredients(meal), const SizedBox(height: 28), _instructions(meal)]);
+            }),
+            if (meal.youtube?.trim().isNotEmpty ?? false) ...[
+              const SizedBox(height: 24), OutlinedButton.icon(onPressed: () => _watch(meal.youtube!), icon: const Icon(Icons.play_circle_outline), label: const Text('Watch video recipe')),
             ],
-          ),
-        ),
-      ),
-    );
+          ]),
+        )))),
+      ]));
+    });
   }
 
-  // ================= CONTENT =================
+  Widget _ingredients(MealEntity meal) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    Text('Ingredients', style: Theme.of(context).textTheme.titleLarge),
+    const SizedBox(height: 8),
+    if (meal.ingredients.isEmpty) const Text('Ingredients are unavailable.'),
+    ...List.generate(meal.ingredients.length, (index) {
+      final measure = index < meal.measures.length ? meal.measures[index] : '';
+      final checked = _checked.contains(index);
+      return CheckboxListTile(
+        contentPadding: EdgeInsets.zero, controlAffinity: ListTileControlAffinity.leading,
+        value: checked, onChanged: (value) => setState(() { if (value == true) { _checked.add(index); } else { _checked.remove(index); } }),
+        title: Text(meal.ingredients[index], style: TextStyle(decoration: checked ? TextDecoration.lineThrough : null)),
+        subtitle: measure.isEmpty ? null : Text(measure),
+      );
+    }),
+  ]);
 
-  Widget _buildMobileContent(dynamic meal) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildQuickInfo(meal),
-        const SizedBox(height: 32),
-        _buildIngredients(meal),
-        const SizedBox(height: 32),
-        _buildInstructions(meal),
-        _buildYoutubeButton(meal),
-      ],
-    );
+  Widget _instructions(MealEntity meal) {
+    final text = meal.instructions?.trim() ?? '';
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text('Instructions', style: Theme.of(context).textTheme.titleLarge),
+      const SizedBox(height: 12),
+      SelectableText(text.isEmpty ? 'No instructions available.' : text, style: const TextStyle(height: 1.6)),
+    ]);
   }
 
-  Widget _buildDesktopContent(dynamic meal) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildQuickInfo(meal),
-        const SizedBox(height: 32),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(child: _buildIngredients(meal)),
-            const SizedBox(width: 32),
-            Expanded(child: _buildInstructions(meal)),
-          ],
-        ),
-        _buildYoutubeButton(meal),
-      ],
-    );
-  }
-
-  // ================= QUICK INFO =================
-
-  Widget _buildQuickInfo(dynamic meal) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(
-          alpha: 0.35,
-        ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _infoItem(Icons.restaurant, meal.category ?? "Meal"),
-          _infoItem(Icons.public, meal.area ?? "World"),
-          _infoItem(Icons.list_alt, "${meal.ingredients.length} ingredients"),
-        ],
-      ),
-    );
-  }
-
-  Widget _infoItem(IconData icon, String label) {
-    return Column(
-      children: [
-        Icon(icon, color: Theme.of(context).colorScheme.primary),
-        const SizedBox(height: 4),
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-      ],
-    );
-  }
-
-  // ================= INGREDIENTS =================
-
-  Widget _buildIngredients(dynamic meal) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _sectionTitle("Ingredients"),
-        const SizedBox(height: 12),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: meal.ingredients.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 4,
-          ),
-          itemBuilder: (context, index) {
-            final ingredient = meal.ingredients[index];
-            final measure = index < meal.measures.length
-                ? meal.measures[index]
-                : "";
-
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Theme.of(context).dividerColor),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(ingredient, overflow: TextOverflow.ellipsis),
-                  ),
-                  Text(
-                    measure,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  // ================= INSTRUCTIONS =================
-
-  Widget _buildInstructions(dynamic meal) {
-    final steps = meal.instructions!
-        .split('.')
-        .where((String s) => s.trim().length > 5)
-        .toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _sectionTitle("Instructions"),
-        const SizedBox(height: 12),
-        ...steps.asMap().entries.map((entry) {
-          return Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CircleAvatar(
-                    radius: 14,
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    child: Text(
-                      "${entry.key + 1}",
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      entry.value.trim(),
-                      style: const TextStyle(height: 1.5),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }),
-      ],
-    );
-  }
-
-  // ================= YOUTUBE =================
-
-  Widget _buildYoutubeButton(dynamic meal) {
-    if (meal.youtube == null || meal.youtube!.isEmpty) {
-      return const SizedBox.shrink();
+  Future<void> _watch(String link) async {
+    final uri = Uri.tryParse(link);
+    try {
+      if (uri != null && uri.scheme == 'https' && await launchUrl(uri, mode: LaunchMode.externalApplication)) return;
+    } catch (_) {
+      // Report a failed external launch without interrupting the recipe.
     }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 32),
-      child: Center(
-        child: OutlinedButton.icon(
-          onPressed: () => launchUrlString(meal.youtube!),
-          icon: const Icon(Icons.play_arrow),
-          label: const Text("Watch Video Recipe"),
-        ),
-      ),
-    );
-  }
-
-  // ================= SHARED =================
-
-  Widget _sectionTitle(String text) {
-    return Text(
-      text,
-      style: Theme.of(
-        context,
-      ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not open video.')));
   }
 }

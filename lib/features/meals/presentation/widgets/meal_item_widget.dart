@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:meals/core/router/app_router.dart';
+import 'package:meals/core/widgets/recipe_image.dart';
 import 'package:meals/features/meals/domain/entities/meal_entity.dart';
 
 class MealItemWidget extends StatelessWidget {
@@ -8,34 +9,25 @@ class MealItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      elevation: 0,
+      color: theme.colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: InkWell(
-        borderRadius: BorderRadius.circular(15),
-        onTap: () {
-          Navigator.of(
-            context,
-          ).pushNamed(AppRouter.mealDetailsRoute, arguments: meal.id);
-        },
+        onTap: () => Navigator.of(context).pushNamed(
+          AppRouter.mealDetailsRoute, arguments: meal.id,
+        ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Center(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: Image.network(
-                  meal.thumbnail ?? '',
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              meal.name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge,
+            Expanded(child: Hero(tag: meal.id, child: RecipeImage(url: meal.thumbnail))),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(meal.name, maxLines: 2, overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
             ),
           ],
         ),
