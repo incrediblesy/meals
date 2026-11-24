@@ -15,6 +15,8 @@ import 'package:meals/features/meals/domain/usecases/list_meals_by_first_letter_
 import 'package:meals/features/meals/domain/usecases/lookup_random_meal_usecase.dart';
 import 'package:meals/features/meals/domain/usecases/search_meals_by_name_usecase.dart';
 import 'package:meals/features/meals/presentation/bloc/meals_bloc.dart';
+import 'package:meals/features/search/data/search_filter_catalog.dart';
+import 'package:meals/features/search/presentation/cubit/search_cubit.dart';
 
 import '../constants/assets.dart';
 import '../errors/failures.dart';
@@ -76,6 +78,19 @@ void init() {
 
   // Repository
   sl.registerLazySingleton<MealRepository>(() => MealRepositoryImpl(sl()));
+
+  // ================================================================
+  // Features - Search
+
+  sl.registerLazySingleton(() => SearchFilterCatalog(sl()));
+
+  sl.registerFactory(
+    () => SearchCubit(
+      searchMealsByName: sl(),
+      getMealsByQuery: sl(),
+      filterCatalog: sl(),
+    ),
+  );
 
   // Bloc
 

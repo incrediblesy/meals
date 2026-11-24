@@ -8,12 +8,21 @@ class CategoryModel extends CategoryEntity {
     super.description,
   });
 
-  factory CategoryModel.fromJson(Map<String, dynamic> json) => CategoryModel(
-    id: json['idCategory'],
-    name: json['strCategory'],
-    thumbnail: json['strCategoryThumb'],
-    description: json['strCategoryDescription'],
-  );
+  factory CategoryModel.fromJson(Map<String, dynamic> json) {
+    final id = _readString(json['idCategory']);
+    final name = _readString(json['strCategory']);
+
+    if (id == null || name == null) {
+      throw const FormatException('Category ID and name are required.');
+    }
+
+    return CategoryModel(
+      id: id,
+      name: name,
+      thumbnail: _readString(json['strCategoryThumb']),
+      description: _readString(json['strCategoryDescription']),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     'idCategory': id,
@@ -22,10 +31,20 @@ class CategoryModel extends CategoryEntity {
     'strCategoryDescription': description,
   };
 
-  factory CategoryModel.fromEntity(CategoryEntity entity) => CategoryModel(
-    id: entity.id,
-    name: entity.name,
-    thumbnail: entity.thumbnail,
-    description: entity.description,
-  );
+  factory CategoryModel.fromEntity(CategoryEntity entity) {
+    return CategoryModel(
+      id: entity.id,
+      name: entity.name,
+      thumbnail: entity.thumbnail,
+      description: entity.description,
+    );
+  }
+
+  static String? _readString(Object? value) {
+    if (value is! String) return null;
+
+    final trimmed = value.trim();
+
+    return trimmed.isEmpty ? null : trimmed;
+  }
 }

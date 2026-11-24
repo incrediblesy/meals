@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:meals/core/router/app_router.dart';
+import 'package:meals/core/widgets/app_network_image.dart';
 import 'package:meals/features/categories/domain/entities/category_entity.dart';
 import 'package:meals/features/meals/presentation/bloc/meals_bloc.dart';
 import 'package:meals/features/meals/presentation/pages/meal_list_page.dart';
@@ -11,32 +12,54 @@ class CategoryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Ink(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        color: Colors.grey.withAlpha(5),
+    final theme = Theme.of(context);
+    final name = category.name ?? 'Unknown';
+
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      color: theme.colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: theme.colorScheme.outlineVariant),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(15),
-        onTap: () {
-          Navigator.of(context).pushNamed(
-            AppRouter.mealListRoute,
-            arguments: MealListPageArguments(
-              event: GetMealsByQuery("c=${category.name}"),
-              title: category.name ?? '',
-            ),
-          );
-        },
+        onTap: category.name == null
+            ? null
+            : () {
+                Navigator.of(context).pushNamed(
+                  AppRouter.mealListRoute,
+                  arguments: MealListPageArguments(
+                    event: GetMealsByQuery(
+                      Uri(queryParameters: {'c': name}).query,
+                    ),
+                    title: name,
+                  ),
+                );
+              },
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 50),
+          padding: const EdgeInsets.all(12),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.network(category.thumbnail ?? '', fit: BoxFit.cover),
-              const SizedBox(height: 10),
+              Expanded(
+                child: AppNetworkImage(
+                  url: category.thumbnail,
+                  width: double.infinity,
+                  height: double.infinity,
+                  fit: BoxFit.contain,
+                  semanticLabel: name,
+                ),
+              ),
+              const SizedBox(height: 8),
               Text(
-                category.name ?? '',
-                style: Theme.of(context).textTheme.titleLarge,
+                name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
