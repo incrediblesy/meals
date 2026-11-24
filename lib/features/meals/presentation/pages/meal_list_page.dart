@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meals/features/meals/domain/entities/meal_entity.dart';
 import 'package:meals/features/meals/presentation/bloc/meals_bloc.dart';

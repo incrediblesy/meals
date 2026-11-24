@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -18,19 +18,13 @@ Future<void> main() async {
 
   // Check if the platform is supported
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    // Initialize WindowManager
-    await windowManager.ensureInitialized();
+    final window = WindowManager.instance.getCurrent()!;
 
-    // Configure WindowManager
-    WindowOptions windowOptions = const WindowOptions(
-      size: Size(600, 800),
-      title: 'Meals',
-      minimumSize: Size(300, 400),
-    );
-    windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.show();
-      await windowManager.focus();
-    });
+    window.title = 'Meals';
+    window.setSize(const Size(600, 800).toNative(), false);
+    window.minimumSize = const Size(300, 400).toNative();
+    window.center();
+    window.show();
   }
 
   // Run app

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:meals/features/categories/presentation/pages/categories_page.dart';
 import 'package:meals/features/meals/presentation/pages/home_page.dart';
 import 'package:meals/features/meals/presentation/pages/meal_details_page.dart';

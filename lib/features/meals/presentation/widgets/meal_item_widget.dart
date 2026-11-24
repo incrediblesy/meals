@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:meals/core/router/app_router.dart';
 import 'package:meals/features/meals/domain/entities/meal_entity.dart';
 

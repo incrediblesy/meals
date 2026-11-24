@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meals/core/router/app_router.dart';
 import 'package:meals/features/categories/presentation/pages/categories_page.dart';
