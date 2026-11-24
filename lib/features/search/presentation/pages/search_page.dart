@@ -6,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meals/core/themes/app_tokens.dart';
 import 'package:meals/core/widgets/app_empty.dart';
 import 'package:meals/core/widgets/app_error.dart';
-import 'package:meals/core/widgets/app_loading.dart';
+import 'package:meals/features/meals/presentation/widgets/meal_grid_skeleton.dart';
 
 import '../../domain/entities/search_history_entry.dart';
 
@@ -181,7 +181,9 @@ class _SearchPageState extends State<SearchPage> {
         onHistorySelected: _selectHistory,
       ),
 
-      SearchStatus.loading => const AppLoading(message: 'Searching recipes...'),
+      SearchStatus.loading => const MealGridSkeleton(
+        label: 'Searching recipes',
+      ),
 
       SearchStatus.success => SearchResults(state: state),
 

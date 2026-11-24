@@ -36,21 +36,126 @@ class HomeNavigationBar extends StatelessWidget {
     required this.onChanged,
   });
 
+  static const _primaryTabs = [
+    HomeTab.discover,
+    HomeTab.categories,
+    HomeTab.favorites,
+  ];
+
+  static const _secondaryTabs = [
+    HomeTab.shopping,
+    HomeTab.planner,
+    HomeTab.settings,
+  ];
+
+  NavigationDestination _destination(HomeTab tab) {
+    return NavigationDestination(
+      icon: Icon(tab.icon),
+      selectedIcon: Icon(tab.selectedIcon),
+      label: tab.label,
+    );
+  }
+
+  Future<void> _showMore(BuildContext context) async {
+    final result = await showModalBottomSheet<HomeTab>(
+      context: context,
+      showDragHandle: true,
+      useSafeArea: true,
+      isScrollControlled: true,
+      builder: (context) {
+        final theme = Theme.of(context);
+        final colors = theme.colorScheme;
+
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              0,
+              AppSpacing.lg,
+              AppSpacing.xl,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: Text('More', style: theme.textTheme.headlineSmall),
+                ),
+
+                for (final tab in _secondaryTabs)
+                  ListTile(
+                    selected: selectedTab == tab,
+                    selectedTileColor: colors.primaryContainer,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                    ),
+                    leading: Icon(
+                      selectedTab == tab ? tab.selectedIcon : tab.icon,
+                    ),
+                    title: Text(tab.label),
+                    trailing: selectedTab == tab
+                        ? Icon(Icons.check_rounded, color: colors.primary)
+                        : null,
+                    onTap: () => Navigator.of(context).pop(tab),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (!context.mounted || result == null) return;
+
+    onChanged(result);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return NavigationBar(
-      labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-      selectedIndex: selectedTab.index,
-      onDestinationSelected: (index) {
-        onChanged(HomeTab.values[index]);
-      },
-      destinations: HomeTab.values.map((tab) {
-        return NavigationDestination(
-          icon: Icon(tab.icon),
-          selectedIcon: Icon(tab.selectedIcon),
-          label: tab.label,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 600;
+
+        if (!compact) {
+          return NavigationBar(
+            selectedIndex: selectedTab.index,
+            onDestinationSelected: (index) {
+              onChanged(HomeTab.values[index]);
+            },
+            destinations: HomeTab.values.map(_destination).toList(),
+          );
+        }
+
+        final index = _primaryTabs.indexOf(selectedTab);
+
+        return NavigationBar(
+          selectedIndex: index == -1 ? _primaryTabs.length : index,
+
+          labelBehavior: constraints.maxWidth < 360
+              ? NavigationDestinationLabelBehavior.onlyShowSelected
+              : NavigationDestinationLabelBehavior.alwaysShow,
+
+          onDestinationSelected: (index) {
+            if (index == _primaryTabs.length) {
+              _showMore(context);
+              return;
+            }
+
+            onChanged(_primaryTabs[index]);
+          },
+
+          destinations: [
+            ..._primaryTabs.map(_destination),
+
+            const NavigationDestination(
+              icon: Icon(Icons.more_horiz_rounded),
+              label: 'More',
+            ),
+          ],
         );
-      }).toList(),
+      },
     );
   }
 }

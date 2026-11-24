@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meals/core/themes/app_tokens.dart';
 import 'package:meals/core/widgets/app_empty.dart';
 import 'package:meals/core/widgets/app_error.dart';
-import 'package:meals/core/widgets/app_loading.dart';
 import 'package:meals/features/meals/presentation/widgets/meal_grid.dart';
+import 'package:meals/features/meals/presentation/widgets/meal_grid_skeleton.dart';
 
 import '../cubit/favorites_cubit.dart';
 import '../cubit/favorites_state.dart';
@@ -17,9 +17,8 @@ class FavoritesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<FavoritesCubit, FavoritesState>(
       builder: (context, state) => switch (state.status) {
-        FavoritesStatus.initial || FavoritesStatus.loading => const AppLoading(
-          message: 'Loading favorites...',
-        ),
+        FavoritesStatus.initial || FavoritesStatus.loading =>
+          const MealGridSkeleton(label: 'Loading favorites'),
         FavoritesStatus.failure => AppError(
           title: 'Favorites unavailable',
           message: state.error ?? 'Unable to load saved recipes.',

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meals/core/errors/failures.dart';
 import 'package:meals/core/widgets/app_empty.dart';
 import 'package:meals/core/widgets/app_error.dart';
-import 'package:meals/core/widgets/app_loading.dart';
+import 'package:meals/features/meals/presentation/widgets/meal_grid_skeleton.dart';
 
 import '../bloc/meals_bloc.dart';
 import '../widgets/meal_grid.dart';
@@ -53,7 +53,7 @@ class _MealListPageState extends State<MealListPage> {
           if (state is MealsError) {
             return AppError(message: state.message, onRetry: _load);
           }
-          return const AppLoading(message: 'Loading recipes...');
+          return const MealGridSkeleton(label: 'Loading recipes');
         },
       ),
     );

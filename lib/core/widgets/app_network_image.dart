@@ -32,6 +32,10 @@ class AppNetworkImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fadeDuration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : const Duration(milliseconds: 200);
+
     Widget image;
 
     if (!_isValidUrl) {
@@ -64,7 +68,8 @@ class AppNetworkImage extends StatelessWidget {
           height: height,
           fit: fit,
 
-          fadeInDuration: const Duration(milliseconds: 200),
+          fadeInDuration: fadeDuration,
+          fadeOutDuration: fadeDuration,
 
           placeholder: (context, url) {
             return _placeholder(context, isLoading: true);
