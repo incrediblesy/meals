@@ -105,7 +105,7 @@ jobs:
       - name: Download Android artifact
         uses: actions/download-artifact@v8
         with:
-          name: meals-android-debug
+          name: meals-android-release
           path: artifacts/android
 
       - name: Download Windows artifact
@@ -215,13 +215,13 @@ jobs:
         run: flutter pub get
 
       - name: Build APK
-        run: flutter build apk --debug --no-pub
+        run: flutter build apk --release --no-pub
 
       - name: Upload Android APK
         uses: actions/upload-artifact@v7
         with:
-          name: meals-android-debug
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: meals-android-release
+          path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 14
           if-no-files-found: error
 
