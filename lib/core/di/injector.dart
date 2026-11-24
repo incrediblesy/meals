@@ -29,7 +29,7 @@ void init() {
   // ================================================================
   // Core
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
-  sl.registerLazySingleton(() => NetworkService(sl()));
+  sl.registerLazySingleton(() => NetworkService());
   sl.registerLazySingleton(() => Connectivity());
   sl.registerLazySingleton(() => AppRouter());
   sl.registerLazySingleton(() => AppTheme());

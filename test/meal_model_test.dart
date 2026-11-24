@@ -1,33 +1,74 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meals/features/meals/data/models/meal_model.dart';
-import 'package:meals/features/meals/domain/entities/meal_entity.dart';
 
 void main() {
-  final payload = <String, dynamic>{
-    'idMeal': '1', 'strMeal': 'Soup',
-    'strIngredient1': ' Onion ', 'strMeasure1': null,
-    'strIngredient2': '  ', 'strMeasure2': 'ignored',
-    'strIngredient3': 'Carrot', 'strMeasure3': ' 2 ',
-    'strIngredient4': 'Water', 'strMeasure4': '',
-  };
+  group('MealModel.fromJson', () {
+    test('parses basic meal data', () {
+      final meal = MealModel.fromJson({
+        'idMeal': '123',
+        'strMeal': 'Chicken Soup',
+        'strCategory': 'Chicken',
+        'strArea': 'British',
+      });
 
-  test('ingredient quantities retain the same indexes', () {
-    final meal = MealModel.fromJson(payload);
-    expect(meal.ingredients, ['Onion', 'Carrot', 'Water']);
-    expect(meal.measures, ['', '2', '']);
-    expect(() => meal.ingredients.add('Salt'), throwsUnsupportedError);
-  });
+      expect(meal.id, '123');
+      expect(meal.name, 'Chicken Soup');
+      expect(meal.category, 'Chicken');
+      expect(meal.area, 'British');
+    });
 
-  test('legacy entity parser produces aligned quantities', () {
-    final meal = MealEntity.fromJson(payload);
-    expect(meal.ingredients, ['Onion', 'Carrot', 'Water']);
-    expect(meal.measures, ['', '2', '']);
-  });
+    test('keeps ingredients and measurements aligned', () {
+      final meal = MealModel.fromJson({
+        'idMeal': '123',
+        'strMeal': 'Chicken Rice',
+        'strIngredient1': 'Chicken',
+        'strMeasure1': '500 g',
+        'strIngredient2': 'Salt',
+        'strMeasure2': null,
+        'strIngredient3': 'Rice',
+        'strMeasure3': '200 g',
+      });
 
-  test('summary payload can omit all recipe details', () {
-    final meal = MealModel.fromJson({'idMeal': '2', 'strMeal': 'Pasta'});
-    expect(meal.instructions, isNull);
-    expect(meal.ingredients, isEmpty);
-    expect(meal.measures, isEmpty);
+      expect(meal.ingredients, ['Chicken', 'Salt', 'Rice']);
+
+      expect(meal.measures, ['500 g', '', '200 g']);
+    });
+
+    test('ignores empty ingredients', () {
+      final meal = MealModel.fromJson({
+        'idMeal': '123',
+        'strMeal': 'Soup',
+        'strIngredient1': '   ',
+        'strIngredient2': null,
+        'strIngredient3': '  Onion  ',
+        'strMeasure3': '  2  ',
+      });
+
+      expect(meal.ingredients, ['Onion']);
+      expect(meal.measures, ['2']);
+    });
+
+    test('handles partial meal responses', () {
+      final meal = MealModel.fromJson({'idMeal': '123', 'strMeal': 'Pasta'});
+
+      expect(meal.ingredients, isEmpty);
+      expect(meal.measures, isEmpty);
+      expect(meal.instructions, isNull);
+      expect(meal.isFavorite, isFalse);
+    });
+
+    test('rejects missing meal ID', () {
+      expect(
+        () => MealModel.fromJson({'strMeal': 'Pasta'}),
+        throwsFormatException,
+      );
+    });
+
+    test('rejects missing meal name', () {
+      expect(
+        () => MealModel.fromJson({'idMeal': '123'}),
+        throwsFormatException,
+      );
+    });
   });
 }

@@ -1,16 +1,19 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:meals/core/errors/failures.dart';
 import 'package:meals/features/meals/presentation/bloc/meals_bloc.dart';
 import 'package:meals/features/meals/presentation/widgets/meal_item_widget.dart';
 
 class MealListPageArguments {
   final MealsEvent event;
   final String title;
-  MealListPageArguments({required this.event, required this.title});
+
+  const MealListPageArguments({required this.event, required this.title});
 }
 
 class MealListPage extends StatefulWidget {
   final MealListPageArguments arguments;
+
   const MealListPage({super.key, required this.arguments});
 
   @override
@@ -21,10 +24,12 @@ class _MealListPageState extends State<MealListPage> {
   @override
   void initState() {
     super.initState();
-    _retry();
+    _loadMeals();
   }
 
-  void _retry() => context.read<MealsBloc>().add(widget.arguments.event);
+  void _loadMeals() {
+    context.read<MealsBloc>().add(widget.arguments.event);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,46 +37,53 @@ class _MealListPageState extends State<MealListPage> {
       appBar: AppBar(title: Text(widget.arguments.title)),
       body: BlocBuilder<MealsBloc, MealsState>(
         builder: (context, state) {
+          if (state is MealsLoaded) {
+            return GridView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: state.meals.length,
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 280,
+                childAspectRatio: 0.8,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+              ),
+              itemBuilder: (context, index) {
+                return MealItemWidget(meal: state.meals[index]);
+              },
+            );
+          }
+
           if (state is MealsError) {
+            final isEmpty = state.failure is EmptyResultFailure;
+
             return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Could not load recipes.'),
-                  const SizedBox(height: 12),
-                  FilledButton(
-                    onPressed: _retry,
-                    child: const Text('Try again'),
-                  ),
-                ],
-              ),
-            );
-          }
-          if (state is! MealsLoaded) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state.meals.isEmpty) {
-            return const Center(
-              child: Text('No recipes found. Try another search.'),
-            );
-          }
-          return Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1200),
-              child: GridView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: state.meals.length,
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 260,
-                  childAspectRatio: 0.82,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isEmpty ? Icons.search_off : Icons.error_outline,
+                      size: 48,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(state.message, textAlign: TextAlign.center),
+                    if (!isEmpty) ...[
+                      const SizedBox(height: 16),
+                      FilledButton.icon(
+                        onPressed: _loadMeals,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Try again'),
+                      ),
+                    ],
+                  ],
                 ),
-                itemBuilder: (_, index) =>
-                    MealItemWidget(meal: state.meals[index]),
               ),
-            ),
-          );
+            );
+          }
+
+          return const Center(child: CircularProgressIndicator());
         },
       ),
     );

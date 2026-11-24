@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:meals/core/errors/failures.dart';
 import 'package:meals/core/usecases/no_params.dart';
 import 'package:meals/features/meals/domain/entities/meal_entity.dart';
 import 'package:meals/features/meals/domain/usecases/get_meal_by_id_usecase.dart';
@@ -25,7 +26,7 @@ class MealsBloc extends Bloc<MealsEvent, MealsState> {
       final result = await getMealsUsecase(event.query);
 
       result.fold(
-        (failure) => emit(MealsError(failure.toString())),
+        (failure) => emit(MealsError(failure)),
         (meals) => emit(MealsLoaded(meals)),
       );
     });
@@ -36,7 +37,7 @@ class MealsBloc extends Bloc<MealsEvent, MealsState> {
       final result = await getMealByIdUsecase(event.id);
 
       result.fold(
-        (failure) => emit(MealsError(failure.toString())),
+        (failure) => emit(MealsError(failure)),
         (meal) => emit(MealLoaded(meal)),
       );
     });
@@ -47,7 +48,7 @@ class MealsBloc extends Bloc<MealsEvent, MealsState> {
       final result = await listMealsByFirstLetterUsecase(event.letter);
 
       result.fold(
-        (failure) => emit(MealsError(failure.toString())),
+        (failure) => emit(MealsError(failure)),
         (meals) => emit(MealsLoaded(meals)),
       );
     });
@@ -58,7 +59,7 @@ class MealsBloc extends Bloc<MealsEvent, MealsState> {
       final result = await lookupRandomMealUsecase(NoParams());
 
       result.fold(
-        (failure) => emit(MealsError(failure.toString())),
+        (failure) => emit(MealsError(failure)),
         (meal) => emit(RandomMealLoaded(meal)),
       );
     });
@@ -69,7 +70,7 @@ class MealsBloc extends Bloc<MealsEvent, MealsState> {
       final result = await searchMealsByNameUsecase(event.name);
 
       result.fold(
-        (failure) => emit(MealsError(failure.toString())),
+        (failure) => emit(MealsError(failure)),
         (meals) => emit(MealsLoaded(meals)),
       );
     });
