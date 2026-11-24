@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:meals/features/planner/presentation/cubit/planner_cubit.dart';
+import 'package:meals/features/search/presentation/cubit/search_history_cubit.dart';
+import 'package:meals/features/shopping/presentation/cubit/shopping_cubit.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'package:meals/app.dart';
@@ -46,6 +49,21 @@ Future<void> main() async {
         BlocProvider<FavoritesCubit>(
           lazy: false,
           create: (_) => sl<FavoritesCubit>()..load(),
+        ),
+
+        BlocProvider<ShoppingCubit>(
+          lazy: false,
+          create: (_) => sl<ShoppingCubit>()..load(),
+        ),
+
+        BlocProvider<PlannerCubit>(
+          lazy: false,
+          create: (_) => sl<PlannerCubit>()..load(),
+        ),
+
+        BlocProvider<SearchHistoryCubit>(
+          lazy: false,
+          create: (_) => sl<SearchHistoryCubit>()..load(),
         ),
       ],
       child: const MainApp(),

@@ -5,6 +5,16 @@ enum HomeTab {
   discover('Discover', Icons.explore_outlined, Icons.explore_rounded),
   categories('Categories', Icons.grid_view_outlined, Icons.grid_view_rounded),
   favorites('Favorites', Icons.favorite_border_rounded, Icons.favorite_rounded),
+  shopping(
+    'Shopping',
+    Icons.shopping_cart_outlined,
+    Icons.shopping_cart_rounded,
+  ),
+  planner(
+    'Planner',
+    Icons.calendar_month_outlined,
+    Icons.calendar_month_rounded,
+  ),
   settings('Settings', Icons.settings_outlined, Icons.settings_rounded);
 
   final String label;
@@ -29,6 +39,7 @@ class HomeNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NavigationBar(
+      labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
       selectedIndex: selectedTab.index,
       onDestinationSelected: (index) {
         onChanged(HomeTab.values[index]);

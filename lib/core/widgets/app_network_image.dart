@@ -1,4 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
+import '../cache/recipe_image_cache.dart';
 
 class AppNetworkImage extends StatelessWidget {
   final String? url;
@@ -18,37 +22,66 @@ class AppNetworkImage extends StatelessWidget {
     this.semanticLabel,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    final source = url?.trim() ?? '';
-    final uri = Uri.tryParse(source);
+  bool get _isValidUrl {
+    final uri = Uri.tryParse(url?.trim() ?? '');
 
-    final isValid =
-        uri != null &&
+    return uri != null &&
         (uri.scheme == 'https' || uri.scheme == 'http') &&
         uri.host.isNotEmpty;
+  }
 
-    final Widget image = isValid
-        ? Image.network(
-            source,
-            width: width,
-            height: height,
-            fit: fit,
-            semanticLabel: semanticLabel,
-            errorBuilder: (_, _, _) => _placeholder(context),
-            loadingBuilder: (context, child, progress) {
-              if (progress == null) return child;
+  @override
+  Widget build(BuildContext context) {
+    Widget image;
 
-              return _placeholder(context, isLoading: true);
-            },
-          )
-        : _placeholder(context);
+    if (!_isValidUrl) {
+      image = _placeholder(context);
+    } else {
+      final imageUrl = url!.trim();
 
-    if (borderRadius == null) {
-      return image;
+      if (kIsWeb) {
+        image = Image.network(
+          imageUrl,
+          width: width,
+          height: height,
+          fit: fit,
+
+          loadingBuilder: (context, child, progress) {
+            if (progress == null) return child;
+
+            return _placeholder(context, isLoading: true);
+          },
+
+          errorBuilder: (context, error, stackTrace) {
+            return _placeholder(context);
+          },
+        );
+      } else {
+        image = CachedNetworkImage(
+          imageUrl: imageUrl,
+          cacheManager: RecipeImageCache.manager,
+          width: width,
+          height: height,
+          fit: fit,
+
+          fadeInDuration: const Duration(milliseconds: 200),
+
+          placeholder: (context, url) {
+            return _placeholder(context, isLoading: true);
+          },
+
+          errorWidget: (context, url, error) {
+            return _placeholder(context);
+          },
+        );
+      }
     }
 
-    return ClipRRect(borderRadius: borderRadius!, child: image);
+    if (borderRadius != null) {
+      image = ClipRRect(borderRadius: borderRadius!, child: image);
+    }
+
+    return Semantics(image: true, label: semanticLabel, child: image);
   }
 
   Widget _placeholder(BuildContext context, {bool isLoading = false}) {
@@ -61,15 +94,18 @@ class AppNetworkImage extends StatelessWidget {
         color: colors.surfaceContainerHighest,
         child: Center(
           child: isLoading
-              ? const SizedBox(
+              ? SizedBox(
                   width: 24,
                   height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: colors.primary,
+                  ),
                 )
               : Icon(
                   Icons.image_not_supported_outlined,
-                  size: 32,
                   color: colors.onSurfaceVariant,
+                  size: 32,
                 ),
         ),
       ),

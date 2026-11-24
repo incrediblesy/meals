@@ -3,7 +3,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:meals/core/themes/app_tokens.dart';
 import 'package:meals/features/categories/presentation/pages/categories_page.dart';
 import 'package:meals/features/favorites/presentation/pages/favorites_page.dart';
+import 'package:meals/features/planner/presentation/pages/planner_page.dart';
 import 'package:meals/features/settings/presentation/pages/settings_page.dart';
+import 'package:meals/features/shopping/presentation/pages/shopping_page.dart';
 
 import '../widgets/home/home_navigation.dart';
 import 'discover_page.dart';
@@ -93,6 +95,10 @@ class _HomePageState extends State<HomePage> {
             _selectTab(HomeTab.discover);
           },
         ),
+
+        const ShoppingPage(),
+
+        const PlannerPage(),
 
         const SettingsPage(),
       ],
