@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:meals/core/router/app_router.dart';
 import 'package:meals/core/themes/app_tokens.dart';
 import 'package:meals/core/widgets/app_network_image.dart';
+import 'package:meals/features/favorites/presentation/widgets/favorite_button.dart';
 import 'package:meals/features/meals/domain/entities/meal_entity.dart';
 
 class MealBannerWidget extends StatelessWidget {
@@ -149,6 +150,11 @@ class MealBannerWidget extends StatelessWidget {
                     onTap: () => _openRecipe(context),
                     borderRadius: BorderRadius.circular(AppRadius.xxl),
                   ),
+                ),
+                Positioned(
+                  top: AppSpacing.lg,
+                  right: AppSpacing.lg,
+                  child: FavoriteButton(meal: meal),
                 ),
               ],
             ),

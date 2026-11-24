@@ -6,6 +6,9 @@ import 'package:meals/features/categories/data/repositories/category_repository_
 import 'package:meals/features/categories/domain/repositories/category_repository.dart';
 import 'package:meals/features/categories/domain/usecases/get_category_list_usecase.dart';
 import 'package:meals/features/categories/presentation/bloc/categories_bloc.dart';
+import 'package:meals/features/favorites/data/repositories/favorites_repository_impl.dart';
+import 'package:meals/features/favorites/domain/repositories/favorites_repository.dart';
+import 'package:meals/features/favorites/presentation/cubit/favorites_cubit.dart';
 import 'package:meals/features/meals/data/datasources/meal_datasource.dart';
 import 'package:meals/features/meals/data/repositories/meal_repository_impl.dart';
 import 'package:meals/features/meals/domain/repositories/meal_repository.dart';
@@ -17,6 +20,10 @@ import 'package:meals/features/meals/domain/usecases/search_meals_by_name_usecas
 import 'package:meals/features/meals/presentation/bloc/meals_bloc.dart';
 import 'package:meals/features/search/data/search_filter_catalog.dart';
 import 'package:meals/features/search/presentation/cubit/search_cubit.dart';
+import 'package:meals/features/settings/data/repositories/settings_repository_impl.dart';
+import 'package:meals/features/settings/domain/repositories/settings_repository.dart';
+import 'package:meals/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/assets.dart';
 import '../errors/failures.dart';
@@ -91,6 +98,28 @@ void init() {
       filterCatalog: sl(),
     ),
   );
+
+  // ================================================================
+  // Features - Favorites
+
+  sl.registerLazySingleton<SharedPreferencesAsync>(
+    () => SharedPreferencesAsync(),
+  );
+
+  sl.registerLazySingleton<FavoritesRepository>(
+    () => FavoritesRepositoryImpl(sl()),
+  );
+
+  sl.registerFactory(() => FavoritesCubit(repository: sl()));
+
+  // ================================================================
+  // Features - Settings
+
+  sl.registerLazySingleton<SettingsRepository>(
+    () => SettingsRepositoryImpl(sl()),
+  );
+
+  sl.registerFactory(() => SettingsCubit(repository: sl()));
 
   // Bloc
 

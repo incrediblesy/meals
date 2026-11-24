@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meals/core/widgets/app_error.dart';
 import 'package:meals/core/widgets/app_loading.dart';
 import 'package:meals/core/widgets/app_network_image.dart';
+import 'package:meals/features/favorites/presentation/widgets/favorite_button.dart';
 import 'package:meals/features/meals/domain/entities/meal_entity.dart';
 import 'package:meals/features/meals/presentation/bloc/meals_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -116,6 +117,12 @@ class _MealDetailsPageState extends State<MealDetailsPage> {
     final width = MediaQuery.sizeOf(context).width;
 
     return SliverAppBar(
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: FavoriteButton(meal: meal),
+        ),
+      ],
       expandedHeight: width >= 900 ? 420 : 300,
       pinned: true,
       stretch: true,
