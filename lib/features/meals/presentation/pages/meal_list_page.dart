@@ -33,17 +33,27 @@ class _MealListPageState extends State<MealListPage> {
       body: BlocBuilder<MealsBloc, MealsState>(
         builder: (context, state) {
           if (state is MealsError) {
-            return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-              const Text('Could not load recipes.'),
-              const SizedBox(height: 12),
-              FilledButton(onPressed: _retry, child: const Text('Try again')),
-            ]));
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Could not load recipes.'),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    onPressed: _retry,
+                    child: const Text('Try again'),
+                  ),
+                ],
+              ),
+            );
           }
           if (state is! MealsLoaded) {
             return const Center(child: CircularProgressIndicator());
           }
           if (state.meals.isEmpty) {
-            return const Center(child: Text('No recipes found. Try another search.'));
+            return const Center(
+              child: Text('No recipes found. Try another search.'),
+            );
           }
           return Center(
             child: ConstrainedBox(
@@ -52,10 +62,13 @@ class _MealListPageState extends State<MealListPage> {
                 padding: const EdgeInsets.all(16),
                 itemCount: state.meals.length,
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 260, childAspectRatio: 0.82,
-                  crossAxisSpacing: 12, mainAxisSpacing: 12,
+                  maxCrossAxisExtent: 260,
+                  childAspectRatio: 0.82,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
                 ),
-                itemBuilder: (_, index) => MealItemWidget(meal: state.meals[index]),
+                itemBuilder: (_, index) =>
+                    MealItemWidget(meal: state.meals[index]),
               ),
             ),
           );

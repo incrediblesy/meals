@@ -59,11 +59,7 @@ void init() {
   sl.registerSingleton<CategoryRepository>(CategoryRepositoryImpl(sl()));
 
   // Bloc
-  sl.registerFactory(
-    () => CategoriesBloc(
-      getCategoriesUsecase: sl(),
-    ),
-  );
+  sl.registerFactory(() => CategoriesBloc(getCategoriesUsecase: sl()));
 
   // ================================================================
   // Features - Meals
@@ -79,16 +75,17 @@ void init() {
   sl.registerLazySingleton(() => SearchMealsByNameUseCase(sl()));
 
   // Repository
-  sl.registerLazySingleton<MealRepository>(
-    () => MealRepositoryImpl(
-      sl(),
-    ),
-  );
+  sl.registerLazySingleton<MealRepository>(() => MealRepositoryImpl(sl()));
 
   // Bloc
+
   sl.registerFactory(
     () => MealsBloc(
       getMealsUsecase: sl(),
+      getMealByIdUsecase: sl(),
+      listMealsByFirstLetterUsecase: sl(),
+      lookupRandomMealUsecase: sl(),
+      searchMealsByNameUsecase: sl(),
     ),
   );
 }

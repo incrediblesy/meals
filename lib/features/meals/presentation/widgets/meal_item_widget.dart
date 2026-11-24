@@ -17,17 +17,28 @@ class MealItemWidget extends StatelessWidget {
       color: theme.colorScheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: InkWell(
-        onTap: () => Navigator.of(context).pushNamed(
-          AppRouter.mealDetailsRoute, arguments: meal.id,
-        ),
+        onTap: () =>
+            Navigator.of(context)
+                .pushNamed(AppRouter.mealDetailsRoute, arguments: meal.id),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(child: Hero(tag: meal.id, child: RecipeImage(url: meal.thumbnail))),
+            Expanded(
+              child: Hero(
+                tag: meal.id,
+                child: RecipeImage(url: meal.thumbnail),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.all(12),
-              child: Text(meal.name, maxLines: 2, overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+              child: Text(
+                meal.name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ],
         ),

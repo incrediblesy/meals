@@ -11,7 +11,9 @@ class RecipeImage extends StatelessWidget {
     final color = Theme.of(context).colorScheme;
     Widget fallback() => ColoredBox(
       color: color.surfaceContainerHighest,
-      child: Center(child: Icon(Icons.restaurant_menu, color: color.onSurfaceVariant)),
+      child: Center(
+        child: Icon(Icons.restaurant_menu, color: color.onSurfaceVariant),
+      ),
     );
     final value = url?.trim();
     if (value == null || value.isEmpty) return fallback();

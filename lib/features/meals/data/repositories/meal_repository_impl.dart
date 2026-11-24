@@ -12,10 +12,14 @@ class MealRepositoryImpl implements MealRepository {
 
   List<MealModel> _parse(Response response) {
     final rows = response.data['meals'] as List? ?? const [];
-    return rows.map((row) => MealModel.fromJson(Map<String, dynamic>.from(row as Map))).toList();
+    return rows
+        .map((row) => MealModel.fromJson(Map<String, dynamic>.from(row as Map)))
+        .toList();
   }
 
-  Future<Either<Failure, List<MealModel>>> _list(Future<Response> Function() fetch) async {
+  Future<Either<Failure, List<MealModel>>> _list(
+    Future<Response> Function() fetch,
+  ) async {
     try {
       return Right(_parse(await fetch()));
     } catch (e, s) {
@@ -24,7 +28,9 @@ class MealRepositoryImpl implements MealRepository {
     }
   }
 
-  Future<Either<Failure, MealModel>> _single(Future<Response> Function() fetch) async {
+  Future<Either<Failure, MealModel>> _single(
+    Future<Response> Function() fetch,
+  ) async {
     try {
       final meals = _parse(await fetch());
       if (meals.isEmpty) return Left(EmptyResultFailure());
@@ -42,10 +48,12 @@ class MealRepositoryImpl implements MealRepository {
   Future<Either<Failure, MealModel>> getMealsById(String id) =>
       _single(() => mealDatasource.fetchMealById(id));
   @override
-  Future<Either<Failure, List<MealModel>>> listMealsByFirstLetter(String letter) =>
-      _list(() => mealDatasource.fetchMealsByFirstLetter(letter));
+  Future<Either<Failure, List<MealModel>>> listMealsByFirstLetter(
+    String letter,
+  ) => _list(() => mealDatasource.fetchMealsByFirstLetter(letter));
   @override
-  Future<Either<Failure, MealModel>> lookupRandomMeal() => _single(mealDatasource.fetchRandomMeal);
+  Future<Either<Failure, MealModel>> lookupRandomMeal() =>
+      _single(mealDatasource.fetchRandomMeal);
   @override
   Future<Either<Failure, List<MealModel>>> searchMealsByName(String name) =>
       _list(() => mealDatasource.fetchMealsByName(name));

@@ -11,7 +11,7 @@ part 'categories_state.dart';
 
 class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
   CategoriesBloc({required GetCategoryListUseCase getCategoriesUsecase})
-      : super(CategoriesInitial()) {
+    : super(CategoriesInitial()) {
     on<FetchCategories>((event, emit) async {
       emit(CategoriesLoading());
       final result = await sl<GetCategoryListUseCase>().call(NoParams());

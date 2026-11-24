@@ -8,12 +8,16 @@ class NetworkService {
   final NetworkInfo networkInfo;
 
   NetworkService(this.networkInfo, {Dio? dio})
-      : _dio = dio ?? Dio(BaseOptions(
-          baseUrl: baseUrl,
-          connectTimeout: const Duration(seconds: 10),
-          receiveTimeout: const Duration(seconds: 20),
-          sendTimeout: const Duration(seconds: 10),
-        ));
+    : _dio =
+          dio ??
+          Dio(
+            BaseOptions(
+              baseUrl: baseUrl,
+              connectTimeout: const Duration(seconds: 10),
+              receiveTimeout: const Duration(seconds: 20),
+              sendTimeout: const Duration(seconds: 10),
+            ),
+          );
 
   Future<Response> getRequest(String url) async {
     if (!await networkInfo.isConnected) {

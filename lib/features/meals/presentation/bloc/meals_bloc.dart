@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:meals/core/di/injector.dart';
 import 'package:meals/core/usecases/no_params.dart';
 import 'package:meals/features/meals/domain/entities/meal_entity.dart';
 import 'package:meals/features/meals/domain/usecases/get_meal_by_id_usecase.dart';
@@ -13,11 +12,17 @@ part 'meals_event.dart';
 part 'meals_state.dart';
 
 class MealsBloc extends Bloc<MealsEvent, MealsState> {
-  MealsBloc({required GetMealListUseCase getMealsUsecase})
-      : super(MealsInitial()) {
+  MealsBloc({
+    required GetMealListUseCase getMealsUsecase,
+    required GetMealByIdUseCase getMealByIdUsecase,
+    required ListMealsByFirstLetterUseCase listMealsByFirstLetterUsecase,
+    required LookupRandomMealUseCase lookupRandomMealUsecase,
+    required SearchMealsByNameUseCase searchMealsByNameUsecase,
+  }) : super(MealsInitial()) {
     on<GetMealsByQuery>((event, emit) async {
       emit(MealsLoading());
-      final result = await sl<GetMealListUseCase>().call(event.query);
+
+      final result = await getMealsUsecase(event.query);
 
       result.fold(
         (failure) => emit(MealsError(failure.toString())),
@@ -27,7 +32,8 @@ class MealsBloc extends Bloc<MealsEvent, MealsState> {
 
     on<GetMealById>((event, emit) async {
       emit(MealsLoading());
-      final result = await sl<GetMealByIdUseCase>().call(event.id);
+
+      final result = await getMealByIdUsecase(event.id);
 
       result.fold(
         (failure) => emit(MealsError(failure.toString())),
@@ -37,8 +43,8 @@ class MealsBloc extends Bloc<MealsEvent, MealsState> {
 
     on<ListMealsByFirstLetter>((event, emit) async {
       emit(MealsLoading());
-      final result =
-          await sl<ListMealsByFirstLetterUseCase>().call(event.letter);
+
+      final result = await listMealsByFirstLetterUsecase(event.letter);
 
       result.fold(
         (failure) => emit(MealsError(failure.toString())),
@@ -48,7 +54,8 @@ class MealsBloc extends Bloc<MealsEvent, MealsState> {
 
     on<LookupRandomMeal>((event, emit) async {
       emit(MealsLoading());
-      final result = await sl<LookupRandomMealUseCase>().call(NoParams());
+
+      final result = await lookupRandomMealUsecase(NoParams());
 
       result.fold(
         (failure) => emit(MealsError(failure.toString())),
@@ -58,7 +65,8 @@ class MealsBloc extends Bloc<MealsEvent, MealsState> {
 
     on<SearchMealsByName>((event, emit) async {
       emit(MealsLoading());
-      final result = await sl<SearchMealsByNameUseCase>().call(event.name);
+
+      final result = await searchMealsByNameUsecase(event.name);
 
       result.fold(
         (failure) => emit(MealsError(failure.toString())),
